@@ -9,7 +9,7 @@ packages = [{include = "sendgrid_api"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 pytest = "^7.4.2"
-sendgrid = "^6.10.0"
+twilio = "^8.8.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -17,6 +17,8 @@ pytest-cov = "^4.1.0"
 black = "^23.7.0"
 pytest-mock = "^3.11.1"
 mypy = "^1.5.1"
+twilio-stubs = "^0.2.0"
+tomli = "^2.0.1"
 
 [build-system]
 requires = ["poetry-core"]
