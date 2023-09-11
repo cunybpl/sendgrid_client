@@ -9,7 +9,7 @@ packages = [{include = "sendgrid_api"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 pytest = "^7.4.2"
-twilio = "^8.8.0"
+sendgrid = "^6.10.0"
 
 
 [tool.poetry.group.dev.dependencies]
