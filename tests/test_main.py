@@ -10,4 +10,4 @@ def test_dummy_backend():
         content="<html><h1>Testing content</h2><html>",
     )
 
-    assert main.send_emails([email]) == 1
+    assert main.send_emails([email], main.DummyBackend) == 1

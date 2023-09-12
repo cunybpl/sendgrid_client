@@ -3,7 +3,6 @@ from typing import List, Dict, Any
 import sendgrid
 import sendgrid.helpers.mail as sgm
 from sendgrid_api import config
-import dotenv
 
 
 class Email:
@@ -28,6 +27,7 @@ Emails = List[Email]
 
 
 class BaseBackend(abc.ABC):
+    @abc.abstractclassmethod
     def send_messages(messages: Emails) -> Any:
         raise NotImplementedError(
             "send_messages must be implemented in child classes of BaseBackend"
@@ -39,6 +39,12 @@ class DummyBackend(BaseBackend):
         for email in messages:
             print("Dummy backend didn't do anything!")
         return len(messages)
+
+
+class ConsoleBackend(BaseBackend):
+    def send_messages(messages: Emails) -> Any:
+        for email in messages:
+            print(email)
 
 
 class SendgridBackend(BaseBackend):
@@ -57,9 +63,5 @@ class SendgridBackend(BaseBackend):
 
 
 # Our entrypoint
-def send_emails(emails: Emails):
-    dotenv.load_dotenv()
-    backend_class: BaseBackend = (
-        SendgridBackend if config.ENVIRONMENT == "production" else DummyBackend
-    )
-    return backend_class.send_messages(emails)
+def send_emails(emails: Emails, backend: BaseBackend = SendgridBackend):
+    return backend.send_messages(emails)
