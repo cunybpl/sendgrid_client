@@ -5,63 +5,49 @@ import sendgrid.helpers.mail as sgm
 from sendgrid_api import config
 
 
-class Email:
-    to_email: str
-    from_email: str
-    subject: str
-    content: str
-
-    def __init__(
-        self, to_email: str, from_email: str, subject: str, content: str
-    ) -> "Email":
-        self.to_email = to_email
-        self.from_email = from_email
-        self.subject = subject
-        self.content = content
-
-    def __str__(self) -> str:
-        return f"To: {self.to_email}\nFrom: {self.from_email}\nSubject: {self.subject}\nContent: {self.content}"
-
-
-Emails = List[Email]
-
-
 class BaseBackend(abc.ABC):
-    @abc.abstractclassmethod
-    def send_messages(messages: Emails) -> Any:
-        raise NotImplementedError(
-            "send_messages must be implemented in child classes of BaseBackend"
-        )
+    @abc.abstractmethod
+    def send_messages(
+        addresses_to: List[str], address_from: str, subject: str, content: str | Dict
+    ) -> Any:
+        pass
 
 
 class DummyBackend(BaseBackend):
-    def send_messages(messages: Emails) -> Any:
-        for email in messages:
-            print("Dummy backend didn't do anything!")
-        return len(messages)
-
-
-class ConsoleBackend(BaseBackend):
-    def send_messages(messages: Emails) -> Any:
-        for email in messages:
-            print(email)
+    def send_messages(
+        addresses_to: List[str], address_from: str, subject: str, content: str | Dict
+    ) -> Any:
+        print("Dummy backend didn't do anything!")
+        return len(addresses_to)
 
 
 class SendgridBackend(BaseBackend):
-    def send_messages(messages: Emails) -> Any:
+    def send_messages(
+        addresses_to: List[str], address_from: str, subject: str, content: str | Dict
+    ) -> Any:
         api_key = config.SENDGRID_API_KEY
         sg = sendgrid.SendGridAPIClient(api_key=api_key)
-        for email in messages:
-            mail = sgm.Mail(
-                from_email=sgm.From(email.from_email),
-                to_emails=sgm.To(email.to_email),
-                subject=email.subject,
-                html_content=sgm.Content("text/html", email.content),
-            )
-            response = sg.client.mail.send.post(request_body=mail.get())
-            return response.status_code
+        mail = sgm.Mail(
+            from_email=sgm.From(address_from),
+            to_emails=[sgm.To(address) for address in addresses_to],
+            subject=subject,
+            html_content=sgm.Content("text/html", content),
+        )
+        response = sg.client.mail.send.post(request_body=mail.get())
+        return response.status_code
 
 
 # Our entrypoint
-def send_emails(emails: Emails, backend: BaseBackend = SendgridBackend):
-    return backend.send_messages(emails)
+def send_emails(
+    addresses_to: List[str],
+    address_from: str,
+    subject: str,
+    content: str,
+    backend: BaseBackend = SendgridBackend,
+):
+    return backend.send_messages(
+        address_from=address_from,
+        addresses_to=addresses_to,
+        subject=subject,
+        content=content,
+    )
