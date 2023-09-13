@@ -5,7 +5,7 @@ import sendgrid.helpers.mail as sgm
 from sendgrid_api import config
 
 
-class BaseBackend(abc.ABC):
+class EmailMessenger(abc.ABC):
     @abc.abstractmethod
     def send_messages(
         self,
@@ -17,7 +17,10 @@ class BaseBackend(abc.ABC):
         ...
 
 
-class DummyBackend(BaseBackend):
+class DummyBackend(EmailMessenger):
+    def __init__(self) -> None:
+        super().__init__()
+
     def send_messages(
         self,
         addresses_to: List[str],
@@ -29,7 +32,11 @@ class DummyBackend(BaseBackend):
         return len(addresses_to)
 
 
-class SendgridBackend(BaseBackend):
+class SendgridBackend(EmailMessenger):
+    def __init__(self, sendgrid_api_key: str) -> None:
+        super().__init__()
+        self.client = sendgrid.SendGridAPIClient(api_key=sendgrid_api_key)
+
     def send_messages(
         self,
         addresses_to: List[str],
@@ -41,32 +48,7 @@ class SendgridBackend(BaseBackend):
             from_email=sgm.From(address_from),
             to_emails=[sgm.To(address) for address in addresses_to],
             subject=subject,
-            plain_text_content=sgm.Content(mime_type="text/plain", content=content),
+            html_content=sgm.Content(mime_type="text/html", content=content),
         )
-
-        sg = sendgrid.SendGridAPIClient(api_key=config.SENDGRID_API_KEY)
-        response = sg.client.mail.send.post(request_body=mail.get())
+        response = self.client.client.mail.send.post(request_body=mail.get())
         return response.status_code
-
-
-_backends: Dict[str, type[BaseBackend]] = {
-    "sendgrid": SendgridBackend,
-    "dummy": DummyBackend,
-}
-
-
-# Our entrypoint
-def send_emails(
-    addresses_to: List[str],
-    address_from: str,
-    subject: str,
-    content: str | Dict[str, str],
-    backend_str: str,
-) -> Any:
-    backend = _backends[backend_str]()
-    return backend.send_messages(
-        address_from=address_from,
-        addresses_to=addresses_to,
-        subject=subject,
-        content=content,
-    )
