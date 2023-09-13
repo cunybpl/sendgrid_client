@@ -20,8 +20,8 @@ clean-test:
 
 
 test: clean-test
-	-coverage run --source=sendgrid_api/ -m pytest -s -v && coverage report -m --fail-under=90
-	mypy sendgrid_api --strict
+	-coverage run --source=sendgrid_client/ -m pytest -s -v && coverage report -m --fail-under=90
+	mypy sendgrid_client --strict
 
 test-single-module: clean-test
 	pytest $(module) -v -s
