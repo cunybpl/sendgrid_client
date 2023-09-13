@@ -1,7 +1,7 @@
 import abc
 from typing import List, Any
-import sendgrid
-import sendgrid.helpers.mail as sgm
+import sendgrid  # type: ignore
+import sendgrid.helpers.mail as sgm  # type: ignore
 import re
 
 
@@ -30,7 +30,7 @@ class EmailMessenger(abc.ABC):
         subject: str,
         content: str,
     ) -> Any:
-        ...
+        pass
 
 
 class DummyBackend(EmailMessenger):
