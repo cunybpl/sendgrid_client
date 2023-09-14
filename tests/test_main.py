@@ -3,9 +3,6 @@ from sendgrid_client.main import Emails, DummyBackend, SendgridBackend, send_ema
 import sendgrid
 
 
-pytestmark = pytest.mark.anyio
-
-
 def test_good_emails():
     Emails(["test1@test.com", "test2@test.com"])
 
