@@ -1,6 +1,9 @@
 import pytest
-from sendgrid_api.main import Emails, DummyBackend, SendgridBackend, send_emails
+from sendgrid_client.main import Emails, DummyBackend, SendgridBackend, send_emails
 import sendgrid
+
+
+pytestmark = pytest.mark.anyio
 
 
 def test_good_emails():
@@ -56,3 +59,16 @@ def test_sendgrid_backend(mocker):
     )
     assert result
     assert mocked.called_once()
+
+
+@pytest.mark.live
+def test_sendgrid_backend_integration(live_test_creds):
+    to_emails = Emails(live_test_creds["to_emails"])
+    result = send_emails(
+        to_emails=to_emails,
+        from_email=live_test_creds["from_email"],
+        backend=SendgridBackend(sendgrid_api_key=live_test_creds["api_key"]),
+        subject="Testing subject",
+        content="Testing content",
+    )
+    assert result.status_code == 202
